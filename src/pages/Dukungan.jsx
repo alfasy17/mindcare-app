@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Phone, Bot, Users, MessageCircle, ChevronLeft, Send, Star, Clock, Shield, AlertTriangle } from 'lucide-react'
 import { useForumStore } from '../store/useStore'
+import { useForumStoreSupabase } from '../store/useSupabaseStore'
 
 const psikolog = [
   { name: 'Dr. Amelia Putri', spec: 'Anxiety & Depression', rating: 4.9, reviews: 128, status: 'online', price: 'Rp 150.000/sesi', avatar: '👩‍⚕️', exp: '8 tahun' },
@@ -135,8 +136,8 @@ function PsikologList({ onBack, showToast }) {
   )
 }
 
-function Forum({ onBack, showToast }) {
-  const { threads, addThread, likeThread } = useForumStore()
+function Forum({ onBack, showToast, forumStore }) {
+  const { threads, addThread, likeThread } = forumStore || useForumStore()
   const [showNew, setShowNew] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newTag, setNewTag] = useState('Anxiety')
@@ -375,12 +376,15 @@ function PeerSupport({ onBack }) {
   )
 }
 
-export default function Dukungan({ showToast }) {
+export default function Dukungan({ showToast, user }) {
   const [view, setView] = useState('main')
+  const localForum = useForumStore()
+  const supaForum = useForumStoreSupabase(user?.id)
+  const forumStore = user?.id ? supaForum : localForum
 
   if (view === 'psikolog') return <PsikologList onBack={() => setView('main')} showToast={showToast} />
   if (view === 'ai') return <AIChat onBack={() => setView('main')} />
-  if (view === 'forum') return <Forum onBack={() => setView('main')} showToast={showToast} />
+  if (view === 'forum') return <Forum onBack={() => setView('main')} showToast={showToast} forumStore={forumStore} />
   if (view === 'peer') return <PeerSupport onBack={() => setView('main')} />
 
   const cards = [

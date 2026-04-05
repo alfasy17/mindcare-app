@@ -13,6 +13,7 @@ import Auth from './pages/Auth'
 import Settings from './pages/Settings'
 import { useDarkMode } from './hooks/useDarkMode'
 import { useToast } from './store/useStore'
+import { auth } from './lib/db'
 import './index.css'
 
 const tabLabels = { monitor: 'Monitor', aktivitas: 'Aktivitas', dukungan: 'Dukungan', booster: 'Booster', akun: 'Akun' }
@@ -89,12 +90,43 @@ export default function App() {
 
   useEffect(() => {
     const seen = localStorage.getItem('mindcare-onboarded')
-    const savedUser = localStorage.getItem('mindcare-user')
-    setTimeout(() => {
-      if (savedUser) { setUser(JSON.parse(savedUser)); setAppState('app') }
-      else if (seen) setAppState('auth')
-      else setAppState('onboarding')
-    }, 800)
+
+    // Listen to Supabase auth state
+    const { data: { subscription } } = auth.onAuthChange((supaUser) => {
+      if (supaUser) {
+        const userData = {
+          id: supaUser.id,
+          name: supaUser.user_metadata?.name || supaUser.email?.split('@')[0],
+          email: supaUser.email,
+        }
+        setUser(userData)
+        localStorage.setItem('mindcare-user', JSON.stringify(userData))
+        setAppState('app')
+      } else {
+        setUser(null)
+        localStorage.removeItem('mindcare-user')
+        if (seen) setAppState('auth')
+        else setAppState('onboarding')
+      }
+    })
+
+    // Initial check
+    auth.getUser().then(supaUser => {
+      if (supaUser) {
+        const userData = {
+          id: supaUser.id,
+          name: supaUser.user_metadata?.name || supaUser.email?.split('@')[0],
+          email: supaUser.email,
+        }
+        setUser(userData)
+        setAppState('app')
+      } else {
+        if (seen) setAppState('auth')
+        else setAppState('onboarding')
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   function handleOnboardingDone() {
@@ -108,7 +140,8 @@ export default function App() {
     setAppState('app')
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    await auth.signOut()
     localStorage.removeItem('mindcare-user')
     setUser(null)
     setAppState('auth')
@@ -133,9 +166,9 @@ export default function App() {
   if (appState === 'auth') return <Auth onLogin={handleLogin} />
 
   const pageMap = {
-    monitor: <Monitor showToast={showToast} />,
-    aktivitas: <Aktivitas showToast={showToast} />,
-    dukungan: <Dukungan showToast={showToast} />,
+    monitor: <Monitor showToast={showToast} user={user} />,
+    aktivitas: <Aktivitas showToast={showToast} user={user} />,
+    dukungan: <Dukungan showToast={showToast} user={user} />,
     booster: <Booster showToast={showToast} />,
     akun: <Akun onSettings={() => setShowSettings(true)} onLogout={handleLogout} user={user} showToast={showToast} />,
   }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
+import { auth } from '../lib/db'
 
 function Logo() {
   return (
@@ -25,12 +26,19 @@ function Login({ onLogin, onSwitch }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  function handleLogin(e) {
-    e.preventDefault()
+  async function handleLogin(e) {
+    e?.preventDefault()
     if (!email || !pass) { setError('Email dan password wajib diisi'); return }
     setLoading(true)
     setError('')
-    setTimeout(() => { setLoading(false); onLogin({ name: 'Sarah Amelina', email }) }, 1200)
+    try {
+      const data = await auth.signIn(email, pass)
+      onLogin({ name: data.user.user_metadata?.name || email.split('@')[0], email: data.user.email, id: data.user.id })
+    } catch (err) {
+      setError(err.message === 'Invalid login credentials' ? 'Email atau password salah' : err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -94,14 +102,24 @@ function Login({ onLogin, onSwitch }) {
               <p className="text-xs text-amber-600 dark:text-amber-500">Password: <span className="font-mono font-semibold">demo1234</span></p>
             </div>
             <button
-              onClick={() => {
+              onClick={async () => {
                 setEmail('demo@mindcare.id')
                 setPass('demo1234')
                 setLoading(true)
-                setTimeout(() => {
+                try {
+                  const data = await auth.signIn('demo@mindcare.id', 'demo1234')
+                  onLogin({ name: 'Sarah Amelina', email: data.user.email, id: data.user.id })
+                } catch {
+                  // fallback jika akun demo belum ada
+                  try {
+                    const data = await auth.signUp('demo@mindcare.id', 'demo1234', 'Sarah Amelina')
+                    onLogin({ name: 'Sarah Amelina', email: 'demo@mindcare.id', id: data.user?.id })
+                  } catch (err2) {
+                    setError('Akun demo tidak tersedia: ' + err2.message)
+                  }
+                } finally {
                   setLoading(false)
-                  onLogin({ name: 'Sarah Amelina', email: 'demo@mindcare.id' })
-                }, 800)
+                }
               }}
               className="bg-amber-400 text-white text-xs font-bold px-4 py-2 rounded-xl active:scale-95 transition-all">
               Coba Demo
@@ -133,9 +151,16 @@ function Register({ onLogin, onSwitch }) {
     { id: 'social', label: 'Koneksi Sosial', emoji: '💙' },
   ]
 
-  function handleSubmit() {
+  async function handleSubmit() {
     setLoading(true)
-    setTimeout(() => { setLoading(false); onLogin({ name: form.name, email: form.email }) }, 1200)
+    try {
+      const data = await auth.signUp(form.email, form.pass, form.name)
+      onLogin({ name: form.name, email: form.email, id: data.user?.id })
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

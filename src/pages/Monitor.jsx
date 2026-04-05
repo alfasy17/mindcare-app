@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { useMoodStore } from '../store/useStore'
+import { useMoodStoreSupabase } from '../store/useSupabaseStore'
 
 const moods = [
   { emoji: '😄', label: 'Sangat Baik', value: 5, color: 'emerald', bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-600', bar: 'bg-emerald-400' },
@@ -36,13 +37,18 @@ function getTrend(data, key) {
   return 'same'
 }
 
-export default function Monitor({ showToast }) {
+export default function Monitor({ showToast, user }) {
   const [selectedMood, setSelectedMood] = useState(null)
   const [stress, setStress] = useState(5)
   const [saved, setSaved] = useState(false)
   const [view, setView] = useState('week')
-  const { saveEntry, getWeekData, todayEntry } = useMoodStore()
 
+  // Use Supabase if logged in, fallback to localStorage
+  const localStore = useMoodStore()
+  const supaStore = useMoodStoreSupabase(user?.id)
+  const store = user?.id ? supaStore : localStore
+
+  const { saveEntry, getWeekData, todayEntry } = store
   const weekData = getWeekData()
   const stressCfg = getStressConfig(stress)
   const moodTrend = getTrend(weekData, 'mood')

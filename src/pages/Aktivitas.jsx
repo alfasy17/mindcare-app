@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { BookOpen, Brain, Wind, Target, ChevronLeft, Play, Pause, Check, Clock, Flame } from 'lucide-react'
 import { useJournalStore, useActivityStore, useChallengeStore } from '../store/useStore'
+import { useJournalStoreSupabase, useActivityStoreSupabase } from '../store/useSupabaseStore'
 
 const activityCards = [
   { id: 'jurnal', icon: BookOpen, label: 'Tulis Jurnal', desc: 'Ceritakan harimu', gradient: 'from-violet-500 to-purple-600', light: 'bg-violet-50', iconColor: 'text-violet-500' },
@@ -39,13 +40,13 @@ const riwayat = [
   { icon: '🧘', label: 'Relaksasi Tubuh', time: '3 hari lalu', dur: '10 mnt', color: 'bg-teal-100' },
 ]
 
-function Jurnal({ onBack, showToast }) {
+function Jurnal({ onBack, showToast, journalStore, activityStore }) {
   const [text, setText] = useState('')
   const [saved, setSaved] = useState(false)
   const [promptIdx] = useState(Math.floor(Math.random() * journalPrompts.length))
   const [tag, setTag] = useState('pagi')
-  const { journals, addJournal } = useJournalStore()
-  const { logActivity } = useActivityStore()
+  const { journals, addJournal } = journalStore || useJournalStore()
+  const { logActivity } = activityStore || useActivityStore()
   const tagEmoji = { pagi: '🌅', siang: '☀️', malam: '🌙' }
 
   function handleSave() {
@@ -120,12 +121,12 @@ function Jurnal({ onBack, showToast }) {
   )
 }
 
-function Meditasi({ onBack, showToast }) {
+function Meditasi({ onBack, showToast, activityStore }) {
   const [active, setActive] = useState(null)
   const [timeLeft, setTimeLeft] = useState(0)
   const [running, setRunning] = useState(false)
   const intervalRef = useRef(null)
-  const { logActivity } = useActivityStore()
+  const { logActivity } = activityStore || useActivityStore()
 
   function startSession(idx) {
     setActive(idx)
@@ -234,12 +235,12 @@ function Meditasi({ onBack, showToast }) {
   )
 }
 
-function Napas({ onBack, showToast }) {
+function Napas({ onBack, showToast, activityStore }) {
   const [phase, setPhase] = useState(-1)
   const [count, setCount] = useState(0)
   const [cycles, setCycles] = useState(0)
   const [technique, setTechnique] = useState('478')
-  const { logActivity } = useActivityStore()
+  const { logActivity } = activityStore || useActivityStore()
 
   const techniques = {
     '478': { name: '4-7-8', phases: ['Tarik Napas', 'Tahan', 'Buang Napas'], durations: [4, 7, 8], colors: ['from-blue-400 to-cyan-400', 'from-violet-400 to-purple-400', 'from-teal-400 to-emerald-400'] },
@@ -341,10 +342,10 @@ function Napas({ onBack, showToast }) {
   )
 }
 
-function Challenge({ onBack, showToast }) {
+function Challenge({ onBack, showToast, activityStore }) {
   const { points, completeChallenge, isDoneToday } = useChallengeStore()
-  const { logActivity } = useActivityStore()
-  const { streak } = useActivityStore()
+  const { logActivity } = activityStore || useActivityStore()
+  const { streak } = activityStore || useActivityStore()
   const today = challenges[new Date().getDay() % challenges.length]
 
   function complete(i) {
@@ -435,15 +436,25 @@ function Challenge({ onBack, showToast }) {
   )
 }
 
-export default function Aktivitas({ showToast }) {
+export default function Aktivitas({ showToast, user }) {
   const [view, setView] = useState('main')
-  const { activities, streak, getWeekStats } = useActivityStore()
+
+  // Hybrid: Supabase if logged in, localStorage fallback
+  const localActivity = useActivityStore()
+  const supaActivity = useActivityStoreSupabase(user?.id)
+  const activityStore = user?.id ? supaActivity : localActivity
+
+  const localJournal = useJournalStore()
+  const supaJournal = useJournalStoreSupabase(user?.id)
+  const journalStore = user?.id ? supaJournal : localJournal
+
+  const { activities, streak, getWeekStats } = activityStore
   const weekStats = getWeekStats()
 
-  if (view === 'jurnal') return <Jurnal onBack={() => setView('main')} showToast={showToast} />
-  if (view === 'meditasi') return <Meditasi onBack={() => setView('main')} showToast={showToast} />
-  if (view === 'napas') return <Napas onBack={() => setView('main')} showToast={showToast} />
-  if (view === 'challenge') return <Challenge onBack={() => setView('main')} showToast={showToast} />
+  if (view === 'jurnal') return <Jurnal onBack={() => setView('main')} showToast={showToast} journalStore={journalStore} activityStore={activityStore} />
+  if (view === 'meditasi') return <Meditasi onBack={() => setView('main')} showToast={showToast} activityStore={activityStore} />
+  if (view === 'napas') return <Napas onBack={() => setView('main')} showToast={showToast} activityStore={activityStore} />
+  if (view === 'challenge') return <Challenge onBack={() => setView('main')} showToast={showToast} activityStore={activityStore} />
 
   return (
     <div className="pb-24">
