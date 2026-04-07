@@ -39,7 +39,7 @@ function SidebarNav({ tab, setTab, dark, setDark, user, onSettings }) {
       <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900 rounded-full flex items-center justify-center text-xl">
-            {localStorage.getItem('mc_avatar') || '👩'}
+            {avatar}
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">{user?.name || 'Pengguna'}</p>
@@ -89,7 +89,14 @@ export default function App() {
   const [appState, setAppState] = useState('loading')
   const [user, setUser] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
+  const [avatar, setAvatar] = useState(() => localStorage.getItem('mc_avatar') || '👩')
   const { toasts, show: showToast, remove: removeToast } = useToast()
+
+  useEffect(() => {
+    function onAvatarChange(e) { setAvatar(e.detail) }
+    window.addEventListener('avatarChanged', onAvatarChange)
+    return () => window.removeEventListener('avatarChanged', onAvatarChange)
+  }, [])
 
   useEffect(() => {
     const seen = localStorage.getItem('mindcare-onboarded')
@@ -220,7 +227,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <span className="text-sm bg-teal-50 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 px-4 py-2 rounded-full font-semibold">🌿 Hari ini lebih baik</span>
             <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-xl">
-              {localStorage.getItem('mc_avatar') || '👩'}
+              {avatar}
             </div>
           </div>
         </header>

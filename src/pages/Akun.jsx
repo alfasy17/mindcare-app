@@ -49,6 +49,8 @@ export default function Akun({ onSettings, onLogout, user }) {
   function selectAvatar(emoji) {
     setAvatar(emoji)
     localStorage.setItem('mc_avatar', emoji)
+    // Trigger update di komponen lain
+    window.dispatchEvent(new CustomEvent('avatarChanged', { detail: emoji }))
     setShowAvatarPicker(false)
   }
 
@@ -71,7 +73,7 @@ export default function Akun({ onSettings, onLogout, user }) {
     <div className="pb-24">
       {/* Avatar Picker Modal */}
       {showAvatarPicker && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-end justify-center p-4"
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
           onClick={() => setShowAvatarPicker(false)}>
           <div className="bg-white dark:bg-gray-900 rounded-3xl p-5 w-full max-w-md"
             onClick={e => e.stopPropagation()}>
