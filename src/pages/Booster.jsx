@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Play, Pause, ChevronLeft, Heart, Share2, Bookmark } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Play, Pause, ChevronLeft, Heart, Share2, Bookmark, SkipForward, Volume2 } from 'lucide-react'
 import ArticleDetail from './ArticleDetail'
 import ColoringGame from '../games/ColoringGame'
 import SpotDifferenceGame from '../games/SpotDifferenceGame'
@@ -20,10 +20,38 @@ const affirmations = [
 ]
 
 const playlists = [
-  { emoji: '🌊', name: 'Ocean Waves', desc: 'Suara ombak menenangkan', color: 'from-blue-400 to-cyan-500', tracks: ['Ocean Morning', 'Deep Sea Calm', 'Coastal Breeze'] },
-  { emoji: '🎹', name: 'Piano Relaxing', desc: 'Melodi piano yang lembut', color: 'from-violet-400 to-purple-500', tracks: ['Moonlight', 'Gentle Rain', 'Soft Keys'] },
-  { emoji: '🌙', name: 'Sleep Sounds', desc: 'Bantu tidur lebih nyenyak', color: 'from-indigo-400 to-blue-600', tracks: ['Night Forest', 'Rain on Roof', 'White Noise'] },
-  { emoji: '☕', name: 'Cafe Jazz', desc: 'Vibes kafe yang cozy', color: 'from-amber-400 to-orange-500', tracks: ['Morning Brew', 'Jazz Afternoon', 'Smooth Groove'] },
+  {
+    emoji: '🌊', name: 'Ocean Waves', desc: 'Suara ombak menenangkan',
+    color: 'from-blue-400 to-cyan-500',
+    tracks: [
+      { name: 'Ocean Morning', url: 'https://www.soundjay.com/nature/sounds/ocean-wave-1.mp3' },
+      { name: 'Deep Sea Calm', url: 'https://www.soundjay.com/nature/sounds/ocean-wave-2.mp3' },
+    ]
+  },
+  {
+    emoji: '🎹', name: 'Piano Relaxing', desc: 'Melodi piano yang lembut',
+    color: 'from-violet-400 to-purple-500',
+    tracks: [
+      { name: 'Relaxing Piano', url: 'https://www.bensound.com/bensound-music/bensound-relaxing.mp3' },
+      { name: 'Soft Melody', url: 'https://www.bensound.com/bensound-music/bensound-slowmotion.mp3' },
+    ]
+  },
+  {
+    emoji: '🌙', name: 'Sleep Sounds', desc: 'Bantu tidur lebih nyenyak',
+    color: 'from-indigo-400 to-blue-600',
+    tracks: [
+      { name: 'Rain on Roof', url: 'https://www.soundjay.com/nature/sounds/rain-01.mp3' },
+      { name: 'Night Forest', url: 'https://www.soundjay.com/nature/sounds/crickets-1.mp3' },
+    ]
+  },
+  {
+    emoji: '☕', name: 'Cafe Jazz', desc: 'Vibes kafe yang cozy',
+    color: 'from-amber-400 to-orange-500',
+    tracks: [
+      { name: 'Morning Brew', url: 'https://www.bensound.com/bensound-music/bensound-jazzyfrenchy.mp3' },
+      { name: 'Smooth Groove', url: 'https://www.bensound.com/bensound-music/bensound-thejazzpiano.mp3' },
+    ]
+  },
 ]
 
 const articles = [
@@ -227,10 +255,61 @@ function MemoryGame({ onBack }) {
 export default function Booster() {
   const [game, setGame] = useState(null)
   const [playing, setPlaying] = useState(null)
+  const [trackIdx, setTrackIdx] = useState(0)
   const [liked, setLiked] = useState(false)
   const [saved, setSaved] = useState([])
   const [qIdx] = useState(Math.floor(Math.random() * quotes.length))
   const [article, setArticle] = useState(null)
+  const [progress, setProgress] = useState(0)
+  const [volume, setVolume] = useState(0.7)
+  const audioRef = useRef(null)
+
+  useEffect(() => {
+    if (playing === null) {
+      audioRef.current?.pause()
+      return
+    }
+    const track = playlists[playing].tracks[trackIdx]
+    if (!audioRef.current) {
+      audioRef.current = new Audio(track.url)
+    } else {
+      audioRef.current.src = track.url
+    }
+    audioRef.current.volume = volume
+    audioRef.current.loop = false
+    audioRef.current.play().catch(() => {})
+    audioRef.current.ontimeupdate = () => {
+      if (audioRef.current.duration) {
+        setProgress(audioRef.current.currentTime / audioRef.current.duration)
+      }
+    }
+    audioRef.current.onended = () => {
+      const nextIdx = (trackIdx + 1) % playlists[playing].tracks.length
+      setTrackIdx(nextIdx)
+    }
+    return () => { audioRef.current?.pause() }
+  }, [playing, trackIdx])
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume
+  }, [volume])
+
+  function togglePlay(i) {
+    if (playing === i) {
+      audioRef.current?.pause()
+      setPlaying(null)
+    } else {
+      setPlaying(i)
+      setTrackIdx(0)
+      setProgress(0)
+    }
+  }
+
+  function skipTrack() {
+    if (playing === null) return
+    setTrackIdx(idx => (idx + 1) % playlists[playing].tracks.length)
+    setProgress(0)
+  }
 
   if (game === 'puzzle') return <PuzzleGame onBack={() => setGame(null)} />
   if (game === 'memory') return <MemoryGame onBack={() => setGame(null)} />
@@ -279,35 +358,74 @@ export default function Booster() {
 
         {/* Playlist */}
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-lg p-5">
-          <h2 className="font-bold text-gray-800 dark:text-white dark:text-white mb-3">🎵 Playlist Relaksasi</h2>
+          <h2 className="font-bold text-gray-800 dark:text-white mb-3">🎵 Playlist Relaksasi</h2>
           <div className="grid grid-cols-2 gap-3">
             {playlists.map((p, i) => (
-              <button key={i} onClick={() => setPlaying(playing === i ? null : i)}
+              <button key={i} onClick={() => togglePlay(i)}
                 className={`bg-gradient-to-br ${p.color} rounded-2xl p-4 text-white text-left relative overflow-hidden active:scale-95 transition-transform`}>
                 <div className="text-3xl mb-2">{p.emoji}</div>
                 <p className="text-sm font-bold">{p.name}</p>
                 <p className="text-xs opacity-75 mt-0.5">{p.desc}</p>
-                <div className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center ${playing === i ? 'bg-white/30' : 'bg-white/20'}`}>
+                <div className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center ${playing === i ? 'bg-white/40' : 'bg-white/20'}`}>
                   {playing === i ? <Pause size={13} /> : <Play size={13} />}
                 </div>
+                {playing === i && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                    <div className="h-full bg-white/70 transition-all" style={{ width: `${progress * 100}%` }} />
+                  </div>
+                )}
               </button>
             ))}
           </div>
+
           {playing !== null && (
-            <div className="mt-3 bg-gray-50 rounded-2xl p-3">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-xl">{playlists[playing].emoji}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-gray-700">{playlists[playing].name}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">{playlists[playing].tracks[0]}</p>
+            <div className="mt-3 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{playlists[playing].emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-gray-700 dark:text-gray-200">{playlists[playing].name}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
+                    {playlists[playing].tracks[trackIdx].name}
+                  </p>
                 </div>
-                <button onClick={() => setPlaying(null)}><Pause size={18} className="text-gray-400" /></button>
+                <div className="flex items-center gap-2">
+                  <button onClick={skipTrack} className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                    <SkipForward size={14} className="text-gray-600 dark:text-gray-300" />
+                  </button>
+                  <button onClick={() => togglePlay(playing)} className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center text-white">
+                    <Pause size={14} />
+                  </button>
+                </div>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-1.5">
-                <div className="bg-teal-500 h-1.5 rounded-full w-1/3 animate-pulse" />
+
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 cursor-pointer"
+                onClick={(e) => {
+                  if (!audioRef.current) return
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  const pct = (e.clientX - rect.left) / rect.width
+                  audioRef.current.currentTime = pct * audioRef.current.duration
+                }}>
+                <div className="bg-teal-500 h-1.5 rounded-full transition-all" style={{ width: `${progress * 100}%` }} />
               </div>
-              <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mt-1">
-                <span>1:23</span><span>4:05</span>
+
+              <div className="flex items-center gap-2">
+                <Volume2 size={14} className="text-gray-400 flex-shrink-0" />
+                <input type="range" min="0" max="1" step="0.05" value={volume}
+                  onChange={e => setVolume(Number(e.target.value))}
+                  className="flex-1 accent-teal-500 h-1" />
+              </div>
+
+              <div className="flex gap-1.5">
+                {playlists[playing].tracks.map((t, i) => (
+                  <button key={i} onClick={() => { setTrackIdx(i); setProgress(0) }}
+                    className={`flex-1 py-1 rounded-lg text-xs font-medium transition-all truncate ${
+                      trackIdx === i
+                        ? 'bg-teal-500 text-white'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                    }`}>
+                    {t.name}
+                  </button>
+                ))}
               </div>
             </div>
           )}
