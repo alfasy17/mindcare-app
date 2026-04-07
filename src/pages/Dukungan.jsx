@@ -187,7 +187,7 @@ function Forum({ onBack, showToast, forumStore }) {
           </div>
         )}
         {filtered.map((t) => (
-          <div key={t.id} className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm border border-gray-50 dark:border-gray-800">
+          <div key={t.id} className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
             <div className="flex items-center gap-2 mb-2">
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${tagColors[t.tag] || 'bg-gray-100 text-gray-500'}`}>{t.tag}</span>
               {t.hot && <span className="text-xs bg-rose-100 text-rose-500 px-2 py-0.5 rounded-full font-medium">🔥 Hot</span>}
@@ -350,7 +350,7 @@ function PeerSupport({ onBack }) {
         <div>
           <h3 className="font-bold text-gray-800 dark:text-white dark:text-white mb-3">Chat 1-on-1</h3>
           {peers.map((p, i) => (
-            <div key={i} className="bg-white rounded-2xl p-3 mb-2 shadow-sm border border-gray-50 flex items-center gap-3">
+            <div key={i} className="bg-white dark:bg-gray-900 rounded-2xl p-3 mb-2 shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-3">
               <div className="relative">
                 <div className="w-11 h-11 bg-gray-100 rounded-full flex items-center justify-center text-xl">{p.mood}</div>
                 <div className={`absolute bottom-0 right-0 w-3 h-3 ${p.dot} rounded-full border-2 border-white`} />
@@ -403,7 +403,7 @@ export default function Dukungan({ showToast, user }) {
       <div className="px-4 pt-4 space-y-3">
         {cards.map((c, i) => (
           <button key={i} onClick={() => setView(c.action)}
-            className="w-full bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-50 p-4 flex items-center gap-4 active:scale-95 transition-transform text-left">
+            className="w-full bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 flex items-center gap-4 active:scale-95 transition-transform text-left">
             <div className={`w-14 h-14 bg-gradient-to-br ${c.color} rounded-2xl flex items-center justify-center shadow-sm flex-shrink-0`}>
               <c.icon size={24} className="text-white" />
             </div>

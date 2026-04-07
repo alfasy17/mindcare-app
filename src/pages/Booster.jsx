@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Play, Pause, ChevronLeft, Heart, Share2, Bookmark, SkipForward, Volume2 } from 'lucide-react'
+import { Play, Pause, ChevronLeft, Heart, Share2, Bookmark } from 'lucide-react'
 import ArticleDetail from './ArticleDetail'
 import ColoringGame from '../games/ColoringGame'
 import SpotDifferenceGame from '../games/SpotDifferenceGame'
@@ -24,32 +24,32 @@ const playlists = [
     emoji: '🌊', name: 'Ocean Waves', desc: 'Suara ombak menenangkan',
     color: 'from-blue-400 to-cyan-500',
     tracks: [
-      { name: 'Ocean Morning', url: 'https://www.soundjay.com/nature/sounds/ocean-wave-1.mp3' },
-      { name: 'Deep Sea Calm', url: 'https://www.soundjay.com/nature/sounds/ocean-wave-2.mp3' },
+      { name: 'Ocean Waves', url: 'https://cdn.pixabay.com/audio/2022/03/10/audio_270f9b4f1e.mp3' },
+      { name: 'Sea Shore', url: 'https://cdn.pixabay.com/audio/2021/09/06/audio_6b8a3e6b3e.mp3' },
     ]
   },
   {
     emoji: '🎹', name: 'Piano Relaxing', desc: 'Melodi piano yang lembut',
     color: 'from-violet-400 to-purple-500',
     tracks: [
-      { name: 'Relaxing Piano', url: 'https://www.bensound.com/bensound-music/bensound-relaxing.mp3' },
-      { name: 'Soft Melody', url: 'https://www.bensound.com/bensound-music/bensound-slowmotion.mp3' },
+      { name: 'Relaxing Piano', url: 'https://cdn.pixabay.com/audio/2024/02/28/audio_a0e9f6b3c2.mp3' },
+      { name: 'Soft Piano', url: 'https://cdn.pixabay.com/audio/2022/10/25/audio_946b4b8a4e.mp3' },
     ]
   },
   {
     emoji: '🌙', name: 'Sleep Sounds', desc: 'Bantu tidur lebih nyenyak',
     color: 'from-indigo-400 to-blue-600',
     tracks: [
-      { name: 'Rain on Roof', url: 'https://www.soundjay.com/nature/sounds/rain-01.mp3' },
-      { name: 'Night Forest', url: 'https://www.soundjay.com/nature/sounds/crickets-1.mp3' },
+      { name: 'Rain Sounds', url: 'https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3' },
+      { name: 'Night Ambience', url: 'https://cdn.pixabay.com/audio/2021/10/25/audio_5c1e4b3a2f.mp3' },
     ]
   },
   {
     emoji: '☕', name: 'Cafe Jazz', desc: 'Vibes kafe yang cozy',
     color: 'from-amber-400 to-orange-500',
     tracks: [
-      { name: 'Morning Brew', url: 'https://www.bensound.com/bensound-music/bensound-jazzyfrenchy.mp3' },
-      { name: 'Smooth Groove', url: 'https://www.bensound.com/bensound-music/bensound-thejazzpiano.mp3' },
+      { name: 'Cafe Jazz', url: 'https://cdn.pixabay.com/audio/2022/08/02/audio_884fe92c21.mp3' },
+      { name: 'Smooth Jazz', url: 'https://cdn.pixabay.com/audio/2022/03/15/audio_8cb749d4b2.mp3' },
     ]
   },
 ]
@@ -159,23 +159,35 @@ function PuzzleGame({ onBack }) {
 }
 
 const memoryThemes = [
-  { id: 'nature', label: 'Alam', emoji: '🌿', cards: ['🌸','🌈','⭐','🦋','🌙','🍀'] },
-  { id: 'food', label: 'Makanan', emoji: '🍕', cards: ['🍕','🍦','🍓','🍩','🥑','🍜'] },
-  { id: 'animals', label: 'Hewan', emoji: '🐶', cards: ['🐶','🐱','🐸','🦊','🐼','🦁'] },
-  { id: 'sports', label: 'Olahraga', emoji: '⚽', cards: ['⚽','🏀','🎾','🏊','🚴','🎯'] },
+  { id: 'nature', label: 'Alam', emoji: '🌿', cards: ['🌸','🌈','⭐','🦋','🌙','🍀','🌺','🌻','🍃','🌴'] },
+  { id: 'food', label: 'Makanan', emoji: '🍕', cards: ['🍕','🍦','🍓','🍩','🥑','🍜','🍣','🧁','🥝','🍇'] },
+  { id: 'animals', label: 'Hewan', emoji: '🐶', cards: ['🐶','🐱','🐸','🦊','🐼','🦁','🐨','🦄','🐯','🦋'] },
+  { id: 'sports', label: 'Olahraga', emoji: '⚽', cards: ['⚽','🏀','🎾','🏊','🚴','🎯','🏋️','⛷️','🤸','🎱'] },
+]
+
+const memoryLevels = [
+  { id: 'easy', label: 'Mudah', emoji: '🟢', pairs: 6, cols: 4, desc: '6 pasang · 4 kolom' },
+  { id: 'medium', label: 'Sedang', emoji: '🟡', pairs: 8, cols: 4, desc: '8 pasang · 4 kolom' },
+  { id: 'hard', label: 'Sulit', emoji: '🔴', pairs: 10, cols: 5, desc: '10 pasang · 5 kolom' },
 ]
 
 function MemoryGame({ onBack }) {
   const [themeIdx, setThemeIdx] = useState(null)
+  const [levelIdx, setLevelIdx] = useState(null)
   const [cards, setCards] = useState([])
   const [selected, setSelected] = useState([])
   const [moves, setMoves] = useState(0)
   const [locked, setLocked] = useState(false)
+  const [best, setBest] = useState({})
 
-  function startTheme(idx) {
-    const emojis = memoryThemes[idx].cards
-    const init = [...emojis, ...emojis].map((e, i) => ({ id: i, emoji: e, flipped: false, matched: false })).sort(() => Math.random() - 0.5)
-    setCards(init); setMoves(0); setSelected([]); setThemeIdx(idx)
+  function startGame(tIdx, lIdx) {
+    const level = memoryLevels[lIdx]
+    const emojis = memoryThemes[tIdx].cards.slice(0, level.pairs)
+    const init = [...emojis, ...emojis]
+      .map((e, i) => ({ id: i, emoji: e, flipped: false, matched: false }))
+      .sort(() => Math.random() - 0.5)
+    setCards(init); setMoves(0); setSelected([])
+    setThemeIdx(tIdx); setLevelIdx(lIdx)
   }
 
   function flip(id) {
@@ -189,31 +201,46 @@ function MemoryGame({ onBack }) {
       setMoves(m => m + 1); setLocked(true)
       const [a, b] = newSel.map(sid => newCards.find(c => c.id === sid))
       if (a.emoji === b.emoji) {
-        setTimeout(() => { setCards(c => c.map(x => newSel.includes(x.id) ? { ...x, matched: true } : x)); setSelected([]); setLocked(false) }, 500)
+        setTimeout(() => {
+          setCards(c => c.map(x => newSel.includes(x.id) ? { ...x, matched: true } : x))
+          setSelected([]); setLocked(false)
+        }, 500)
       } else {
-        setTimeout(() => { setCards(c => c.map(x => newSel.includes(x.id) ? { ...x, flipped: false } : x)); setSelected([]); setLocked(false) }, 900)
+        setTimeout(() => {
+          setCards(c => c.map(x => newSel.includes(x.id) ? { ...x, flipped: false } : x))
+          setSelected([]); setLocked(false)
+        }, 900)
       }
     }
   }
 
   const won = cards.length > 0 && cards.every(c => c.matched)
+  useEffect(() => {
+    if (won && themeIdx !== null && levelIdx !== null) {
+      const key = `${themeIdx}_${levelIdx}`
+      setBest(b => ({ ...b, [key]: b[key] == null || moves < b[key] ? moves : b[key] }))
+    }
+  }, [won])
 
+  // Step 1: Choose theme
   if (themeIdx === null) {
     return (
       <div className="pb-24">
         <div className="bg-gradient-to-br from-pink-500 to-rose-500 px-5 pt-6 pb-6">
-          <button onClick={onBack} className="flex items-center gap-1 text-pink-100 mb-3 text-sm"><ChevronLeft size={18} /> Kembali</button>
+          <button onClick={onBack} className="flex items-center gap-1 text-pink-100 mb-3 text-sm">
+            <ChevronLeft size={18} /> Kembali
+          </button>
           <h2 className="text-white text-xl font-bold">🃏 Memory Match</h2>
           <p className="text-pink-100 text-sm mt-0.5">Pilih tema kartu</p>
         </div>
         <div className="px-4 pt-4 grid grid-cols-2 gap-3">
           {memoryThemes.map((t, i) => (
-            <button key={t.id} onClick={() => startTheme(i)}
+            <button key={t.id} onClick={() => setThemeIdx(i)}
               className="bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col items-center gap-3 active:scale-95 transition-transform">
               <span className="text-4xl">{t.emoji}</span>
               <p className="font-semibold text-gray-700 dark:text-gray-200 text-sm">{t.label}</p>
               <div className="flex gap-1 flex-wrap justify-center">
-                {t.cards.slice(0,4).map((e,i) => <span key={i} className="text-lg">{e}</span>)}
+                {t.cards.slice(0, 4).map((e, j) => <span key={j} className="text-lg">{e}</span>)}
               </div>
             </button>
           ))}
@@ -222,29 +249,80 @@ function MemoryGame({ onBack }) {
     )
   }
 
+  // Step 2: Choose level
+  if (levelIdx === null) {
+    const theme = memoryThemes[themeIdx]
+    return (
+      <div className="pb-24">
+        <div className="bg-gradient-to-br from-pink-500 to-rose-500 px-5 pt-6 pb-6">
+          <button onClick={() => setThemeIdx(null)} className="flex items-center gap-1 text-pink-100 mb-3 text-sm">
+            <ChevronLeft size={18} /> Pilih Tema
+          </button>
+          <h2 className="text-white text-xl font-bold">{theme.emoji} {theme.label}</h2>
+          <p className="text-pink-100 text-sm mt-0.5">Pilih tingkat kesulitan</p>
+        </div>
+        <div className="px-4 pt-4 space-y-3">
+          {memoryLevels.map((l, i) => {
+            const key = `${themeIdx}_${i}`
+            return (
+              <button key={l.id} onClick={() => startGame(themeIdx, i)}
+                className="w-full bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-4 active:scale-95 transition-transform text-left">
+                <div className="w-14 h-14 bg-pink-50 dark:bg-pink-900/30 rounded-2xl flex items-center justify-center text-3xl">{l.emoji}</div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-800 dark:text-white">{l.label}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{l.desc}</p>
+                  {best[key] != null && (
+                    <p className="text-xs text-pink-500 font-medium mt-1">🏆 Terbaik: {best[key]} langkah</p>
+                  )}
+                </div>
+                <span className="text-gray-300 dark:text-gray-600 text-lg">›</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
+  // Step 3: Play
   const theme = memoryThemes[themeIdx]
+  const level = memoryLevels[levelIdx]
 
   return (
     <div className="pb-24">
       <div className="bg-gradient-to-br from-pink-500 to-rose-500 px-5 pt-6 pb-6">
-        <button onClick={() => setThemeIdx(null)} className="flex items-center gap-1 text-pink-100 mb-3 text-sm"><ChevronLeft size={18} /> Pilih Tema</button>
-        <h2 className="text-white text-xl font-bold">{theme.emoji} {theme.label}</h2>
-        <p className="text-pink-100 text-sm mt-0.5">Temukan semua pasangan kartu</p>
+        <button onClick={() => setLevelIdx(null)} className="flex items-center gap-1 text-pink-100 mb-3 text-sm">
+          <ChevronLeft size={18} /> Pilih Level
+        </button>
+        <h2 className="text-white text-xl font-bold">{theme.emoji} {theme.label} · {level.label}</h2>
+        <p className="text-pink-100 text-sm mt-0.5">Temukan semua {level.pairs} pasangan</p>
       </div>
       <div className="px-4 pt-4 space-y-4">
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-lg p-5">
-          {won && <div className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-2xl px-4 py-2 text-sm font-semibold text-center mb-4">🎉 Selesai dalam {moves} langkah!</div>}
-          <div className="grid grid-cols-4 gap-2 mb-4">
+          {won && (
+            <div className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-2xl px-4 py-2 text-sm font-semibold text-center mb-4">
+              🎉 Selesai dalam {moves} langkah!
+            </div>
+          )}
+          <div className="grid gap-2 mb-4" style={{ gridTemplateColumns: `repeat(${level.cols}, 1fr)` }}>
             {cards.map(c => (
               <button key={c.id} onClick={() => flip(c.id)}
-                className={`h-16 rounded-xl text-2xl transition-all duration-300 ${c.flipped || c.matched ? 'bg-pink-100 dark:bg-pink-900/30' : 'bg-gradient-to-br from-pink-400 to-rose-500'} ${c.matched ? 'opacity-40' : ''}`}>
+                className={`rounded-xl transition-all duration-300 flex items-center justify-center
+                  ${level.cols === 5 ? 'h-12 text-xl' : 'h-16 text-2xl'}
+                  ${c.flipped || c.matched ? 'bg-pink-100 dark:bg-pink-900/30' : 'bg-gradient-to-br from-pink-400 to-rose-500'}
+                  ${c.matched ? 'opacity-40' : ''}`}>
                 {(c.flipped || c.matched) ? c.emoji : ''}
               </button>
             ))}
           </div>
           <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">Langkah: <span className="font-bold text-gray-700 dark:text-gray-200">{moves}</span></p>
-            <button onClick={() => startTheme(themeIdx)} className="bg-pink-500 text-white text-sm px-4 py-2 rounded-xl font-medium">Main Lagi</button>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Langkah: <span className="font-bold text-gray-700 dark:text-gray-200">{moves}</span>
+            </p>
+            <button onClick={() => startGame(themeIdx, levelIdx)}
+              className="bg-pink-500 text-white text-sm px-4 py-2 rounded-xl font-medium">
+              Main Lagi
+            </button>
           </div>
         </div>
       </div>
@@ -263,40 +341,129 @@ export default function Booster() {
   const [progress, setProgress] = useState(0)
   const [volume, setVolume] = useState(0.7)
   const audioRef = useRef(null)
+  const audioCtxRef = useRef(null)
+  const nodesRef = useRef([])
+
+  // Generate relaxing sounds via Web Audio API
+  function createSound(type) {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    audioCtxRef.current = ctx
+    nodesRef.current = []
+
+    if (type === 0) {
+      // Ocean waves - filtered noise
+      for (let i = 0; i < 3; i++) {
+        const bufferSize = ctx.sampleRate * 2
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
+        const data = buffer.getChannelData(0)
+        for (let j = 0; j < bufferSize; j++) data[j] = Math.random() * 2 - 1
+        const source = ctx.createBufferSource()
+        source.buffer = buffer
+        source.loop = true
+        const filter = ctx.createBiquadFilter()
+        filter.type = 'lowpass'
+        filter.frequency.value = 400 + i * 100
+        const gain = ctx.createGain()
+        gain.gain.value = 0.15
+        // LFO for wave effect
+        const lfo = ctx.createOscillator()
+        lfo.frequency.value = 0.1 + i * 0.05
+        const lfoGain = ctx.createGain()
+        lfoGain.gain.value = 0.1
+        lfo.connect(lfoGain)
+        lfoGain.connect(gain.gain)
+        lfo.start()
+        source.connect(filter)
+        filter.connect(gain)
+        gain.connect(ctx.destination)
+        source.start()
+        nodesRef.current.push(source, lfo)
+      }
+    } else if (type === 1) {
+      // Piano - sine tones
+      const notes = [261.63, 329.63, 392, 523.25]
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator()
+        osc.type = 'sine'
+        osc.frequency.value = freq
+        const gain = ctx.createGain()
+        gain.gain.value = 0
+        // Gentle arpeggio
+        const now = ctx.currentTime
+        for (let t = 0; t < 60; t += 2) {
+          gain.gain.setValueAtTime(0, now + t + i * 0.5)
+          gain.gain.linearRampToValueAtTime(0.08, now + t + i * 0.5 + 0.1)
+          gain.gain.exponentialRampToValueAtTime(0.001, now + t + i * 0.5 + 1.5)
+        }
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.start()
+        nodesRef.current.push(osc)
+      })
+    } else if (type === 2) {
+      // Rain - white noise with filter
+      const bufferSize = ctx.sampleRate * 2
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
+      const data = buffer.getChannelData(0)
+      for (let j = 0; j < bufferSize; j++) data[j] = Math.random() * 2 - 1
+      const source = ctx.createBufferSource()
+      source.buffer = buffer
+      source.loop = true
+      const filter = ctx.createBiquadFilter()
+      filter.type = 'highpass'
+      filter.frequency.value = 1000
+      const gain = ctx.createGain()
+      gain.gain.value = 0.3
+      source.connect(filter)
+      filter.connect(gain)
+      gain.connect(ctx.destination)
+      source.start()
+      nodesRef.current.push(source)
+    } else if (type === 3) {
+      // Jazz - warm tones
+      const jazzNotes = [220, 277.18, 329.63, 369.99, 440]
+      jazzNotes.forEach((freq, i) => {
+        const osc = ctx.createOscillator()
+        osc.type = 'triangle'
+        osc.frequency.value = freq
+        const gain = ctx.createGain()
+        gain.gain.value = 0
+        const now = ctx.currentTime
+        const pattern = [0, 0.8, 1.6, 2.4, 3.2]
+        for (let t = 0; t < 60; t += 4) {
+          const beat = pattern[i % pattern.length]
+          gain.gain.setValueAtTime(0, now + t + beat)
+          gain.gain.linearRampToValueAtTime(0.06, now + t + beat + 0.05)
+          gain.gain.exponentialRampToValueAtTime(0.001, now + t + beat + 0.7)
+        }
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.start()
+        nodesRef.current.push(osc)
+      })
+    }
+  }
+
+  function stopSound() {
+    nodesRef.current.forEach(n => { try { n.stop() } catch {} })
+    nodesRef.current = []
+    audioCtxRef.current?.close()
+    audioCtxRef.current = null
+  }
 
   useEffect(() => {
     if (playing === null) {
-      audioRef.current?.pause()
+      stopSound()
       return
     }
-    const track = playlists[playing].tracks[trackIdx]
-    if (!audioRef.current) {
-      audioRef.current = new Audio(track.url)
-    } else {
-      audioRef.current.src = track.url
-    }
-    audioRef.current.volume = volume
-    audioRef.current.loop = false
-    audioRef.current.play().catch(() => {})
-    audioRef.current.ontimeupdate = () => {
-      if (audioRef.current.duration) {
-        setProgress(audioRef.current.currentTime / audioRef.current.duration)
-      }
-    }
-    audioRef.current.onended = () => {
-      const nextIdx = (trackIdx + 1) % playlists[playing].tracks.length
-      setTrackIdx(nextIdx)
-    }
-    return () => { audioRef.current?.pause() }
-  }, [playing, trackIdx])
-
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = volume
-  }, [volume])
+    stopSound()
+    createSound(playing)
+    return () => stopSound()
+  }, [playing])
 
   function togglePlay(i) {
     if (playing === i) {
-      audioRef.current?.pause()
+      stopSound()
       setPlaying(null)
     } else {
       setPlaying(i)
@@ -304,6 +471,15 @@ export default function Booster() {
       setProgress(0)
     }
   }
+
+  // Fake progress animation
+  useEffect(() => {
+    if (playing === null) { setProgress(0); return }
+    const interval = setInterval(() => {
+      setProgress(p => p >= 1 ? 0 : p + 0.001)
+    }, 100)
+    return () => clearInterval(interval)
+  }, [playing])
 
   function skipTrack() {
     if (playing === null) return
@@ -346,7 +522,7 @@ export default function Booster() {
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-lg p-5">
           <h2 className="font-bold text-gray-800 dark:text-white dark:text-white mb-3">🌟 Affirmasi Harian</h2>
           {affirmations.slice(0, 3).map((a, i) => (
-            <div key={i} className="flex items-center gap-3 bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-3 mb-2 border border-violet-100">
+            <div key={i} className="flex items-center gap-3 bg-violet-50 dark:bg-violet-900/20 rounded-2xl p-3 mb-2 border border-violet-100 dark:border-violet-800">
               <span className="text-xl">{a.emoji}</span>
               <p className="text-sm text-violet-700 font-medium flex-1">{a.text}</p>
               <button onClick={() => setSaved(s => s.includes(i) ? s.filter(x => x !== i) : [...s, i])}>
@@ -389,42 +565,26 @@ export default function Booster() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={skipTrack} className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                    <SkipForward size={14} className="text-gray-600 dark:text-gray-300" />
-                  </button>
                   <button onClick={() => togglePlay(playing)} className="w-8 h-8 bg-teal-500 rounded-full flex items-center justify-center text-white">
                     <Pause size={14} />
                   </button>
                 </div>
               </div>
 
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 cursor-pointer"
-                onClick={(e) => {
-                  if (!audioRef.current) return
-                  const rect = e.currentTarget.getBoundingClientRect()
-                  const pct = (e.clientX - rect.left) / rect.width
-                  audioRef.current.currentTime = pct * audioRef.current.duration
-                }}>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                 <div className="bg-teal-500 h-1.5 rounded-full transition-all" style={{ width: `${progress * 100}%` }} />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Volume2 size={14} className="text-gray-400 flex-shrink-0" />
-                <input type="range" min="0" max="1" step="0.05" value={volume}
-                  onChange={e => setVolume(Number(e.target.value))}
-                  className="flex-1 accent-teal-500 h-1" />
               </div>
 
               <div className="flex gap-1.5">
                 {playlists[playing].tracks.map((t, i) => (
-                  <button key={i} onClick={() => { setTrackIdx(i); setProgress(0) }}
-                    className={`flex-1 py-1 rounded-lg text-xs font-medium transition-all truncate ${
+                  <div key={i}
+                    className={`flex-1 py-1 rounded-lg text-xs font-medium text-center truncate ${
                       trackIdx === i
                         ? 'bg-teal-500 text-white'
                         : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                     }`}>
                     {t.name}
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>

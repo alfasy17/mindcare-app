@@ -30,10 +30,10 @@ export default function Akun({ onSettings, onLogout, user }) {
   ]
 
   const others = [
-    { icon: HelpCircle, label: 'Bantuan & FAQ', color: 'text-gray-500', bg: 'bg-gray-50' },
-    { icon: Star, label: 'Beri Rating Aplikasi', color: 'text-amber-500', bg: 'bg-amber-50' },
-    { icon: FileText, label: 'Syarat & Ketentuan', color: 'text-gray-500', bg: 'bg-gray-50' },
-    { icon: Info, label: 'Tentang MindCare', color: 'text-gray-500', bg: 'bg-gray-50' },
+    { icon: HelpCircle, label: 'Bantuan & FAQ', color: 'text-gray-500', bg: 'bg-gray-50 dark:bg-gray-800' },
+    { icon: Star, label: 'Beri Rating Aplikasi', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/30' },
+    { icon: FileText, label: 'Syarat & Ketentuan', color: 'text-gray-500', bg: 'bg-gray-50 dark:bg-gray-800' },
+    { icon: Info, label: 'Tentang MindCare', color: 'text-gray-500', bg: 'bg-gray-50 dark:bg-gray-800' },
   ]
 
   return (
@@ -76,7 +76,7 @@ export default function Akun({ onSettings, onLogout, user }) {
               { emoji: '📝', value: String(journals.length), label: 'Jurnal', color: 'text-violet-500' },
               { emoji: '🧘', value: String(meditasiCount), label: 'Meditasi', color: 'text-teal-500' },
             ].map((s) => (
-              <div key={s.label} className="bg-gray-50 rounded-2xl p-3 text-center">
+              <div key={s.label} className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-3 text-center">
                 <div className="text-2xl mb-1">{s.emoji}</div>
                 <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
                 <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{s.label}</div>
@@ -102,7 +102,7 @@ export default function Akun({ onSettings, onLogout, user }) {
           </div>
           <div className="grid grid-cols-3 gap-3">
             {achievements.map((a, i) => (
-              <div key={i} className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all ${a.unlocked ? 'bg-amber-50 border border-amber-100' : 'bg-gray-50 opacity-40'}`}>
+              <div key={i} className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all ${a.unlocked ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800' : 'bg-gray-50 dark:bg-gray-800 opacity-40'}`}>
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${a.unlocked ? 'bg-amber-100' : 'bg-gray-100'}`}>{a.emoji}</div>
                 <p className="text-xs font-bold text-gray-700 text-center">{a.label}</p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 text-center leading-tight">{a.desc}</p>
@@ -156,13 +156,13 @@ export default function Akun({ onSettings, onLogout, user }) {
           <div className="bg-rose-50 border border-rose-200 rounded-3xl p-5 space-y-3">
             <p className="text-sm text-rose-700 font-semibold text-center">Yakin ingin keluar dari MindCare?</p>
             <div className="flex gap-2">
-              <button onClick={() => setLogoutConfirm(false)} className="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-medium text-gray-600 bg-white">Batal</button>
+              <button onClick={() => setLogoutConfirm(false)} className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800">Batal</button>
               <button onClick={onLogout} className="flex-1 py-3 rounded-2xl bg-rose-500 text-white text-sm font-bold">Ya, Keluar</button>
             </div>
           </div>
         ) : (
           <button onClick={() => setLogoutConfirm(true)}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-3xl border-2 border-rose-200 text-rose-500 font-bold bg-white">
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-3xl border-2 border-rose-200 dark:border-rose-800 text-rose-500 font-bold bg-white dark:bg-gray-900">
             <LogOut size={18} /> Keluar
           </button>
         )}

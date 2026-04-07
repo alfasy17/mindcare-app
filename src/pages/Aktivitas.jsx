@@ -490,7 +490,7 @@ export default function Aktivitas({ showToast, user }) {
               { e: '🧘', l: 'Meditasi', n: weekStats.meditasi, max: 7 },
               { e: '🎯', l: 'Challenge', n: weekStats.challenge, max: 7 }
             ].map((s) => (
-              <div key={s.l} className="bg-gray-50 rounded-2xl p-3 text-center">
+              <div key={s.l} className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-3 text-center">
                 <div className="text-2xl mb-1">{s.e}</div>
                 <div className="text-xl font-bold text-teal-600">{s.n}x</div>
                 <div className="text-xs text-gray-400 dark:text-gray-500">{s.l}</div>
