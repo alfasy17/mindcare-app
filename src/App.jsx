@@ -19,7 +19,7 @@ import './index.css'
 
 const tabLabels = { monitor: 'Monitor', aktivitas: 'Aktivitas', dukungan: 'Dukungan', booster: 'Booster', akun: 'Akun' }
 
-function SidebarNav({ tab, setTab, dark, setDark, user, onSettings }) {
+function SidebarNav({ tab, setTab, dark, setDark, user, onSettings, avatar }) {
   return (
     <aside className="hidden lg:flex flex-col w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 fixed h-full z-40 transition-colors duration-300">
       <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
@@ -195,7 +195,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 flex transition-colors duration-300">
-      <SidebarNav tab={tab} setTab={setTab} dark={dark} setDark={setDark} user={user} onSettings={() => setShowSettings(true)} />
+      <SidebarNav tab={tab} setTab={setTab} dark={dark} setDark={setDark} user={user} onSettings={() => setShowSettings(true)} avatar={avatar} />
 
       <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
         {/* Mobile header */}
