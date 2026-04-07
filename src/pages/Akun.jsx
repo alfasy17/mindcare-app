@@ -11,15 +11,46 @@ const achievements = [
   { emoji: '💜', label: 'Supporter', desc: 'Bantu 5 orang', unlocked: false },
 ]
 
+const avatarOptions = [
+  { id: 'woman', emoji: '👩', label: 'Perempuan' },
+  { id: 'man', emoji: '👨', label: 'Laki-laki' },
+  { id: 'girl', emoji: '👧', label: 'Gadis' },
+  { id: 'boy', emoji: '👦', label: 'Anak Laki' },
+  { id: 'woman2', emoji: '👩‍🦱', label: 'Keriting' },
+  { id: 'man2', emoji: '👨‍🦱', label: 'Keriting' },
+  { id: 'woman3', emoji: '👩‍🦰', label: 'Merah' },
+  { id: 'man3', emoji: '👨‍🦰', label: 'Merah' },
+  { id: 'woman4', emoji: '👩‍🦳', label: 'Putih' },
+  { id: 'man4', emoji: '👨‍🦳', label: 'Putih' },
+  { id: 'woman5', emoji: '👩‍🦲', label: 'Botak' },
+  { id: 'man5', emoji: '👨‍🦲', label: 'Botak' },
+  { id: 'ninja', emoji: '🥷', label: 'Ninja' },
+  { id: 'astronaut', emoji: '🧑‍🚀', label: 'Astronot' },
+  { id: 'artist', emoji: '🧑‍🎨', label: 'Seniman' },
+  { id: 'scientist', emoji: '🧑‍🔬', label: 'Ilmuwan' },
+  { id: 'robot', emoji: '🤖', label: 'Robot' },
+  { id: 'alien', emoji: '👽', label: 'Alien' },
+  { id: 'cat', emoji: '🐱', label: 'Kucing' },
+  { id: 'fox', emoji: '🦊', label: 'Rubah' },
+]
+
 export default function Akun({ onSettings, onLogout, user }) {
   const [logoutConfirm, setLogoutConfirm] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [name, setName] = useState(user?.name || 'Sarah Amelina')
+  const [avatar, setAvatar] = useState(() => localStorage.getItem('mc_avatar') || '👩')
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false)
   const { streak, activities, getWeekStats } = useActivityStore()
   const { journals } = useJournalStore()
   const meditasiCount = activities.filter(a => a.type === 'meditasi').length
   const weekStats = getWeekStats()
   const progressPct = Math.min(100, Math.round(((weekStats.jurnal + weekStats.meditasi + weekStats.challenge) / 21) * 100))
+
+  function selectAvatar(emoji) {
+    setAvatar(emoji)
+    localStorage.setItem('mc_avatar', emoji)
+    setShowAvatarPicker(false)
+  }
 
   const settings = [
     { icon: User, label: 'Edit Profil', color: 'text-teal-500', bg: 'bg-teal-50 dark:bg-teal-900/30' },
@@ -38,12 +69,44 @@ export default function Akun({ onSettings, onLogout, user }) {
 
   return (
     <div className="pb-24">
+      {/* Avatar Picker Modal */}
+      {showAvatarPicker && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-end justify-center p-4"
+          onClick={() => setShowAvatarPicker(false)}>
+          <div className="bg-white dark:bg-gray-900 rounded-3xl p-5 w-full max-w-md"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-gray-800 dark:text-white text-lg">Pilih Avatar</h3>
+              <button onClick={() => setShowAvatarPicker(false)}
+                className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-400">✕</button>
+            </div>
+            <div className="grid grid-cols-5 gap-3">
+              {avatarOptions.map((a) => (
+                <button key={a.id} onClick={() => selectAvatar(a.emoji)}
+                  className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all active:scale-95 ${
+                    avatar === a.emoji
+                      ? 'bg-teal-50 dark:bg-teal-900/30 ring-2 ring-teal-400'
+                      : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}>
+                  <span className="text-3xl">{a.emoji}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 leading-tight text-center">{a.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Profile Header */}
       <div className="bg-gradient-to-br from-teal-500 via-teal-400 to-cyan-400 px-5 pt-6 pb-12">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center text-5xl border-2 border-white/30">👩</div>
-            <button className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md">
+            <button onClick={() => setShowAvatarPicker(true)}
+              className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center text-5xl border-2 border-white/30 active:scale-95 transition-transform">
+              {avatar}
+            </button>
+            <button onClick={() => setShowAvatarPicker(true)}
+              className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md">
               <Camera size={13} className="text-teal-500" />
             </button>
           </div>
@@ -57,7 +120,7 @@ export default function Akun({ onSettings, onLogout, user }) {
                 <button onClick={() => setEditMode(true)}><Edit3 size={14} className="text-white/70" /></button>
               </div>
             )}
-            <p className="text-teal-100 text-sm mt-0.5">sarah@email.com</p>
+            <p className="text-teal-100 text-sm mt-0.5">{user?.email || 'user@email.com'}</p>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">Member sejak Jan 2024</span>
               <span className="text-xs bg-amber-400/80 text-white px-2 py-0.5 rounded-full">✨ Free Plan</span>
