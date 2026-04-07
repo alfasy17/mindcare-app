@@ -3,6 +3,7 @@ import { Sun, Moon } from 'lucide-react'
 import BottomNav from './components/BottomNav'
 import PageTransition from './components/PageTransition'
 import ToastContainer from './components/Toast'
+import InstallPrompt from './components/InstallPrompt'
 import Monitor from './pages/Monitor'
 import Aktivitas from './pages/Aktivitas'
 import Dukungan from './pages/Dukungan'
@@ -233,6 +234,7 @@ export default function App() {
         </div>
       </div>
       <ToastContainer toasts={toasts} onRemove={removeToast} />
+      <InstallPrompt />
     </div>
   )
 }
